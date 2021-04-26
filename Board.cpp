@@ -1,8 +1,3 @@
-/* 
- * File:   Game.cpp
- * Author: Avery Wylin
- * 
- */
 
 #include <iostream>
 
