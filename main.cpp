@@ -1,8 +1,3 @@
-        /* 
-         * File:   main.cpp
-         * Author: Avery Wylin
-         *
-         */
 
 #include <cstdlib>
 #include <iostream>
