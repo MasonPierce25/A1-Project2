@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     bool isMax = true;
     int userInput=0;
     
-    while(!calculateWin(mainBoard)){
+    while(!calculateWin(mainBoard) && !mainBoard.isFull()){
         if(!isMax){
             cin>>userInput;
             mainBoard.placePiece(userInput-1,1);
@@ -38,9 +38,8 @@ int main(int argc, char** argv) {
         }
         mainBoard.path=0;
         mainBoard.pathLength=0;
-        tempBoard=minMaxAB(mainBoard,1,isMax,INT_MIN,INT_MAX,evalFunctions[0]);
+        tempBoard=minMaxAB(mainBoard,4,isMax,INT_MIN,INT_MAX,evalFunctions[1]);
         mainBoard.placePiece(tempBoard.getFirstPath(),isMax?2:1);
-//        cout<<"Chosen Path: "<<tempBoard.path<<" : "<<tempBoard.evaluatedState;
         mainBoard.printBoardState();
         cout << "Board Value: "<<(evalFunctions[0])(mainBoard)<<endl;
         isMax = !isMax;
@@ -81,7 +80,7 @@ Board minMaxAB(Board currentBoard, int depth, bool isMax,int alpha, int beta, in
                 bestSuccessorBoard=tempBoard;
                 init = false;
             }
-cout<<"Play: "<<i<<" : "<<tempBoard.evaluatedState<<endl;
+            cout<<i<<" : "<<tempBoard.evaluatedState<<endl;
             //choose the best successor or break using Alpha Beta Pruning
             if(isMax){
                 //update alpha if the current board is greater
@@ -211,6 +210,7 @@ int evalFunction0(Board board){
     
     int bestMin=0;
     int bestMax=0;
+    int centerBonus=0;
     int min=0;
     int max=0;
     
@@ -225,6 +225,9 @@ int evalFunction0(Board board){
         for(int y=1;y<Board::HEIGHT;y++){
             if(board.getBoardState(x,y)==0)
                 continue;
+            else if(x==4){
+                centerBonus+=100*(board.getBoardState(x,y)==1?-1:1);
+            }
             if(board.getBoardState(x,y)==lastPlayer){
                 if(lastPlayer == 1){
                    min++;
@@ -328,8 +331,11 @@ int evalFunction0(Board board){
         x++;
         for(;x<Board::WIDTH && x<=z;x++) {
            int y = z - x;
-           if(board.getBoardState(Board::WIDTH-1-x,y)==0)
+            if(board.getBoardState(Board::WIDTH-1-x,y)==0)
                 continue;
+            else if(x==4){
+                centerBonus+=board.getBoardState(x,y)==1?-1:1;
+            }
             if(board.getBoardState(Board::WIDTH-1-x,y)==lastPlayer){
                 if(lastPlayer == 1){
                    min++;
@@ -355,6 +361,124 @@ int evalFunction0(Board board){
 }
 
 int evalFunction1(Board board){
+    uint8_t player =  board.pathLength%2+1;
+    uint8_t opposite = player==1?2:1;
+    uint8_t temp=0;
+    int frameSize=4;
+    int value=0;
+    static int playerValueMap[5]={0,1,10,100,1000};
+    int playerCount=0;
+    int oppositeCount=0;
+    
+    //column count
+    for(int x=0;x<Board::WIDTH;x++){
+        for(int y=0;y<=Board::HEIGHT-frameSize;y++){
+            //count in frame
+            for(int i=0;i<frameSize;i++){
+                temp = board.getBoardState(x,y+i);
+                if(temp==player)
+                    playerCount++;
+                else if(temp==opposite)
+                    oppositeCount++;
+            }
+            //add to value
+            
+            if(oppositeCount==0){
+            //player is progressing
+            value+=playerValueMap[playerCount];
+            }
+            
+            if(oppositeCount==3&&playerCount==0){
+            //player will lose
+            value-=10000;
+            }
+            
+            playerCount=oppositeCount=0;
+        }
+    }
+    
+    //row count
+    for(int y=0;y<Board::HEIGHT;y++){
+        for(int x=0;x<=Board::WIDTH-frameSize;x++){
+            //count in frame
+            for(int i=0;i<frameSize;i++){
+                temp = board.getBoardState(x+i,y);
+                if(temp==player)
+                    playerCount++;
+                else if(temp==opposite)
+                    oppositeCount++;
+            }
+            //add to value
+            
+            if(oppositeCount==0){
+            //player is progressing
+            value+=playerValueMap[playerCount];
+            }
+            
+            if(oppositeCount==3&&playerCount==0){
+            //player will lose
+            value-=10000;
+            }
+            
+            playerCount=oppositeCount=0;
+        }
+    }
+    
+    //decrese count
+    for(int y=Board::HEIGHT-frameSize+1;y<Board::HEIGHT;y++){
+        for(int x=0;x<=Board::WIDTH-frameSize;x++){
+             //count in frame
+            for(int i=0;i<frameSize;i++){
+                temp = board.getBoardState(x+i,y-i);
+                if(temp==player)
+                    playerCount++;
+                else if(temp==opposite)
+                oppositeCount++;
+            }
+            //add to value
+            
+            if(oppositeCount==0){
+            //player is progressing
+            value+=playerValueMap[playerCount];
+            }
+            
+            if(oppositeCount==3&&playerCount==0){
+            //player will lose
+            value-=10000;
+            }
+            
+            playerCount=oppositeCount=0;
+        }
+    }
+    
+    //increase count
+    for(int y=0;y<=Board::HEIGHT-frameSize;y++){
+        for(int x=0;x<=Board::WIDTH-frameSize;x++){
+             //count in frame
+            for(int i=0;i<frameSize;i++){
+                temp = board.getBoardState(x+i,y+i);
+                if(temp==player)
+                    playerCount++;
+                else if(temp==opposite)
+                oppositeCount++;
+            }
+            //add to value
+            
+            if(oppositeCount==0){
+            //player is progressing
+            value+=playerValueMap[playerCount];
+            }
+            
+            if(oppositeCount==3&&playerCount==0){
+            //player will lose
+            value-=10000;
+            }
+            
+            playerCount=oppositeCount=0;
+        }
+    }
+    
+    return value;
     
 }
 

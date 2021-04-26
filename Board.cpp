@@ -129,3 +129,11 @@ int Board::getFirstPath(){
     return path>>(PATH_SIZE*(pathLength-1));
 }
 
+bool Board::isFull(){
+    for(int i=0;i<WIDTH;i++){
+        if(stackSize[i]<HEIGHT){
+            return false;
+        }
+    }
+}
+

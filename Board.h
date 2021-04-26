@@ -40,6 +40,7 @@ public:
     uint8_t getBoardState(int,int);
     void setBoardState(int,int,uint8_t);
     int getFirstPath();
+    bool isFull();
 };
 
 #endif /* BOARD_H */
