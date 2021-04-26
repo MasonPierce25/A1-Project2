@@ -23,12 +23,19 @@
         
         struct StatisticObject{
             int currentFunction=0;
+            int totalNodesExpanded[3]={0,0,0};
+            int totalNodesGenerated[3]={0,0,0};
             int nodesExpanded[3]={0,0,0};
             int nodesGenerated[3]={0,0,0};
             void print(int function){
                 cout<<"\nEV Function: "<<function+1<<endl;
                 cout<<"Nodes Expanded: "<<nodesExpanded[function]<<endl;
                 cout<<"Nodes Generated: "<<nodesGenerated[function]<<endl;
+            }
+            void printTotals(int function){
+                cout<<"\nEV Function: "<<function+1<<endl;
+                cout<<"Total Nodes Expanded: "<<totalNodesExpanded[function]<<endl;
+                cout<<"Total Nodes Generated: "<<totalNodesGenerated[function]<<endl;
             }
             void clear(){
                 cout<<"Cleared stats"<<endl;
@@ -58,6 +65,11 @@ int main(int argc, char** argv) {
     runGame(0,8,2,4,evalFunctions);
     runGame(1,8,2,8,evalFunctions);
     
+    cout<<"\nTOTALS: "<<endl;
+    
+    stats.printTotals(0);
+    stats.printTotals(1);
+    stats.printTotals(2);
     char input;
     cout<<"The program has finished. Enter any value to continue."<<endl;
     cin>>input;
@@ -87,6 +99,10 @@ void runGame(int EVMax, int depthMax, int EVMin, int depthMin, int(**evalFunctio
         cout<<"\n"<<"MAX: "<<EVMax+1<<" DEPTH: "<<depthMax<<" vs MIN: "<<EVMin+1<<" DEPTH: "<<depthMin<<endl;
         stats.print(EVMax);
         stats.print(EVMin);
+        stats.totalNodesGenerated[EVMax]+=stats.nodesGenerated[EVMax];
+        stats.totalNodesGenerated[EVMin]+=stats.nodesGenerated[EVMin];
+        stats.totalNodesExpanded[EVMax]+=stats.nodesExpanded[EVMax];
+        stats.totalNodesExpanded[EVMin]+=stats.nodesExpanded[EVMin];
         stats.clear();
 }
 
