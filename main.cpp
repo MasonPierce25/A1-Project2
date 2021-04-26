@@ -38,7 +38,6 @@
                 cout<<"Total Nodes Generated: "<<totalNodesGenerated[function]<<endl;
             }
             void clear(){
-                cout<<"Cleared stats"<<endl;
                 for(int i=0;i<3;i++){
                     nodesExpanded[i]=0;
                     nodesGenerated[i]=0;
