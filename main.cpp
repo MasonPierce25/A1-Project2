@@ -18,44 +18,46 @@
         int evalFunction0(Board);
         int evalFunction1(Board);
         int evalFunction2(Board);
-        void runGame(int,int,int,int);
+        void runGame(int,int,int,int,int(**evalFunctions)(Board));
+        
+        struct StatisticObject{
+            
+        };
         
 
 int main(int argc, char** argv) {
-    Board mainBoard,tempBoard;
     int (*evalFunctions[3])(Board);
     evalFunctions[0] = &evalFunction0;
     evalFunctions[1] = &evalFunction1;
     evalFunctions[2] = &evalFunction2;
-    bool isMax = true;
-    int userInput=0;
     
-    while(!calculateWin(mainBoard) && !mainBoard.isFull()){
-//        if(!isMax){
-//            cin>>userInput;
-//            mainBoard.placePiece(userInput-1,1);
-//            isMax=!isMax;
-//            continue;
-//        }
-        mainBoard.path=0;
-        mainBoard.pathLength=0;
-        tempBoard=minMaxAB(mainBoard,4,isMax,INT_MIN,INT_MAX,evalFunctions[0]);
-        mainBoard.placePiece(tempBoard.getFirstPath(),isMax?2:1);
-        mainBoard.printBoardState();
-        cout << "Board Value: "<<(evalFunctions[0])(mainBoard)<<endl;
-        isMax = !isMax;
-        
-    }
-        mainBoard.printBoardState();
+    runGame(0,4,1,4,evalFunctions);
     
     char input;
-    cout<<"The game has finished. Enter any value to continue."<<endl;
+    cout<<"The program has finished. Enter any value to continue."<<endl;
     cin>>input;
     return 0;
 }
 
-void runGame(){
+void runGame(int EVMax, int depthMax, int EVMin, int depthMin, int(**evalFunctions)(Board)){
+    Board mainBoard,tempBoard;
+    bool isMax = true; //start with max
     
+    while(!calculateWin(mainBoard) && !mainBoard.isFull()){
+        //clear the board path of main so it does not append to minmax's path
+        mainBoard.path=0;
+        mainBoard.pathLength=0;
+        //call minmax
+        tempBoard=minMaxAB(mainBoard,isMax?depthMax:depthMin,isMax,INT_MIN,INT_MAX,evalFunctions[isMax?EVMax:EVMin]);
+        //play the value determined by minmax
+        mainBoard.placePiece(tempBoard.getFirstPath(),isMax?2:1);
+        //print the board
+        mainBoard.printBoardState();
+        //swap player
+        isMax = !isMax;
+    }
+    //the game was won
+        mainBoard.printBoardState();
 }
 
 Board minMaxAB(Board currentBoard, int depth, bool isMax,int alpha, int beta, int (*EvaluationFunction)(Board)){
@@ -135,7 +137,13 @@ bool calculateWin(Board &board){
            }
            lastPlayer=board.getBoardState(x,y);
            if(consecutive == 3){
-               cout<<"column win";
+               if(lastPlayer==1){
+                   cout<<"Min ";
+               }
+               else{
+                   cout<<"Max ";
+               }
+               cout<<"won using a Column case."<<endl;
                return true;
            }
         }
@@ -154,7 +162,13 @@ bool calculateWin(Board &board){
            }
            lastPlayer=board.getBoardState(x,y);
            if(consecutive == 3){
-               cout<<"row win";
+               if(lastPlayer==1){
+                   cout<<"Min ";
+               }
+               else{
+                   cout<<"Max ";
+               }
+               cout<<"won using a Row case."<<endl;
                return true;
            }
         }
@@ -179,7 +193,13 @@ bool calculateWin(Board &board){
            
            lastPlayer=board.getBoardState(x,y);
            if(consecutive == 3){
-               cout<<"decreasing diagnal win";
+               if(lastPlayer==1){
+                   cout<<"Min ";
+               }
+               else{
+                   cout<<"Max ";
+               }
+               cout<<"won using a Decreasing Diagnal case."<<endl;
                return true;
            }
         }
@@ -203,7 +223,13 @@ bool calculateWin(Board &board){
            
            lastPlayer=board.getBoardState(Board::WIDTH-1-x,y);
            if(consecutive == 3){
-               cout<<"increasing diagnal win";
+               if(lastPlayer==1){
+                   cout<<"Min ";
+               }
+               else{
+                   cout<<"Max ";
+               }
+               cout<<"won using an Increasing Diagnal case."<<endl;
                return true;
            }
         }
