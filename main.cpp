@@ -5,7 +5,6 @@
 #include <iomanip>
 #include "Board.h"
 #include <math.h>
-#include <time.h>
 
         using namespace std;
         
@@ -20,6 +19,7 @@
             int currentFunction=0;
             int totalNodesExpanded[3]={0,0,0};
             int totalNodesGenerated[3]={0,0,0};
+            int wins[3] = {0,0,0};
             int nodesExpanded[3]={0,0,0};
             int nodesGenerated[3]={0,0,0};
             void print(int function){
@@ -31,6 +31,7 @@
                 cout<<"\nEV Function: "<<function+1<<endl;
                 cout<<"Total Nodes Expanded: "<<totalNodesExpanded[function]<<endl;
                 cout<<"Total Nodes Generated: "<<totalNodesGenerated[function]<<endl;
+                cout<<"Total Wins: "<<wins[function]<<endl;
             }
             void clear(){
                 for(int i=0;i<3;i++){
@@ -185,6 +186,7 @@ bool calculateWin(Board &board){
                else{
                    cout<<"Max ";
                }
+               stats.wins[stats.currentFunction]++;
                cout<<"won using a Column case."<<endl;
                return true;
            }
@@ -210,6 +212,7 @@ bool calculateWin(Board &board){
                else{
                    cout<<"Max ";
                }
+               stats.wins[stats.currentFunction]++;
                cout<<"won using a Row case."<<endl;
                return true;
            }
@@ -241,6 +244,7 @@ bool calculateWin(Board &board){
                else{
                    cout<<"Max ";
                }
+               stats.wins[stats.currentFunction]++;
                cout<<"won using a Decreasing Diagnal case."<<endl;
                return true;
            }
@@ -271,6 +275,7 @@ bool calculateWin(Board &board){
                else{
                    cout<<"Max ";
                }
+               stats.wins[stats.currentFunction]++;
                cout<<"won using an Increasing Diagnal case."<<endl;
                return true;
            }
