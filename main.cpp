@@ -10,6 +10,7 @@
 #include <iomanip>
 #include "Board.h"
 #include <math.h>
+#include <time.h>
 
         using namespace std;
         
@@ -21,8 +22,24 @@
         void runGame(int,int,int,int,int(**evalFunctions)(Board));
         
         struct StatisticObject{
-            
+            int currentFunction=0;
+            int nodesExpanded[3]={0,0,0};
+            int nodesGenerated[3]={0,0,0};
+            void print(int function){
+                cout<<"\nEV Function: "<<function+1<<endl;
+                cout<<"Nodes Expanded: "<<nodesExpanded[function]<<endl;
+                cout<<"Nodes Generated: "<<nodesGenerated[function]<<endl;
+            }
+            void clear(){
+                cout<<"Cleared stats"<<endl;
+                for(int i=0;i<3;i++){
+                    nodesExpanded[i]=0;
+                    nodesGenerated[i]=0;
+                }
+            }
         };
+        
+        StatisticObject stats;
         
 
 int main(int argc, char** argv) {
@@ -31,7 +48,15 @@ int main(int argc, char** argv) {
     evalFunctions[1] = &evalFunction1;
     evalFunctions[2] = &evalFunction2;
     
-    runGame(0,4,1,4,evalFunctions);
+    runGame(0,2,1,2,evalFunctions);
+    runGame(0,2,2,4,evalFunctions);
+    runGame(1,2,2,8,evalFunctions);
+    runGame(0,4,1,2,evalFunctions);
+    runGame(0,4,2,4,evalFunctions);
+    runGame(1,4,2,8,evalFunctions);
+    runGame(0,8,1,2,evalFunctions);
+    runGame(0,8,2,4,evalFunctions);
+    runGame(1,8,2,8,evalFunctions);
     
     char input;
     cout<<"The program has finished. Enter any value to continue."<<endl;
@@ -44,6 +69,7 @@ void runGame(int EVMax, int depthMax, int EVMin, int depthMin, int(**evalFunctio
     bool isMax = true; //start with max
     
     while(!calculateWin(mainBoard) && !mainBoard.isFull()){
+        stats.currentFunction = isMax?EVMax:EVMin;
         //clear the board path of main so it does not append to minmax's path
         mainBoard.path=0;
         mainBoard.pathLength=0;
@@ -53,11 +79,15 @@ void runGame(int EVMax, int depthMax, int EVMin, int depthMin, int(**evalFunctio
         mainBoard.placePiece(tempBoard.getFirstPath(),isMax?2:1);
         //print the board
         mainBoard.printBoardState();
+        cout<<(isMax?"Max EV: ":"Min EV: ")<<tempBoard.evaluatedState<<endl;
         //swap player
         isMax = !isMax;
     }
     //the game was won
-        mainBoard.printBoardState();
+        cout<<"\n"<<"MAX: "<<EVMax+1<<" DEPTH: "<<depthMax<<" vs MIN: "<<EVMin+1<<" DEPTH: "<<depthMin<<endl;
+        stats.print(EVMax);
+        stats.print(EVMin);
+        stats.clear();
 }
 
 Board minMaxAB(Board currentBoard, int depth, bool isMax,int alpha, int beta, int (*EvaluationFunction)(Board)){
@@ -66,6 +96,7 @@ Board minMaxAB(Board currentBoard, int depth, bool isMax,int alpha, int beta, in
         //compute the evaluated score of the board and couple it with the board
         currentBoard.evaluatedState=EvaluationFunction(currentBoard);
         //return the board with its computed score and path
+        stats.nodesGenerated[stats.currentFunction]++;
         return currentBoard;
     }
     
@@ -80,6 +111,7 @@ Board minMaxAB(Board currentBoard, int depth, bool isMax,int alpha, int beta, in
         //create a new play
         tempBoard=currentBoard;
         if(tempBoard.placePiece(i,isMax?2:1)){
+            stats.nodesExpanded[stats.currentFunction]++;
             //valid play was made, call recursive algorithm
             tempBoard = minMaxAB(tempBoard,depth-1,!isMax,alpha,beta,EvaluationFunction);
             //initializes the best succesor once, prevents returning the parent by accident
@@ -418,7 +450,7 @@ int evalFunction1(Board board){
             
             if(oppositeCount==3&&playerCount==0){
             //player will lose
-            value-=10000;
+            value-=100000;
             }
             
             playerCount=oppositeCount=0;
@@ -445,7 +477,7 @@ int evalFunction1(Board board){
             
             if(oppositeCount==3&&playerCount==0){
             //player will lose
-            value-=10000;
+            value-=100000;
             }
             
             playerCount=oppositeCount=0;
@@ -472,7 +504,7 @@ int evalFunction1(Board board){
             
             if(oppositeCount==3&&playerCount==0){
             //player will lose
-            value-=10000;
+            value-=100000;
             }
             
             playerCount=oppositeCount=0;
@@ -499,17 +531,115 @@ int evalFunction1(Board board){
             
             if(oppositeCount==3&&playerCount==0){
             //player will lose
-            value-=10000;
+            value-=100000;
             }
             
             playerCount=oppositeCount=0;
         }
     }
     
-    return value;
+    return value; 
     
 }
 
-int evalFunction2(Board board){
+int evalFunction2(Board board) {
     
+        int lastPlay = board.path & 3;
+        int rowVal = board.stackSize[lastPlay] - 1;
+        int x = lastPlay;
+        int y = rowVal;
+        if(y<0)
+            y=0;
+        int score = 0;
+        int player = (board.pathLength % 2) + 1;
+        int otherPlayer = player == 1 ? 2 : 1;
+
+        for (int i = 1; i < 4; i++) {
+
+            if (x - i >= 0) {
+                if (board.getBoardState(x - i, y) == player)
+                    score++;
+                else if (board.getBoardState(x - i, y) == otherPlayer)
+                    break;
+            }
+
+        };
+
+        for (int i = 1; i < 4; i++) {
+
+            if (x + i < Board::WIDTH) {
+                if (board.getBoardState(x + i, y) == player)
+                    score++;
+                else if (board.getBoardState(x + i, y) == otherPlayer)
+                    break;
+            }
+
+        };
+
+        for (int i = 1; i < 4; i++) {
+
+            if (y - i >= 0) {
+                if (board.getBoardState(x, y - i) == player)
+                    score++;
+                else if (board.getBoardState(x, y - i) == otherPlayer)
+                    break;
+            }
+
+        };
+
+        for (int i = 1; i < 4; i++) {
+
+            if (y + i < Board::HEIGHT) {
+                if (board.getBoardState(x, y + i) == player)
+                    score++;
+                else if (board.getBoardState(x, y + 1) == otherPlayer)
+                    break;
+            }
+
+        };
+
+        for (int i = 1; i < 4; i++) {
+
+            if (x - i >= 0 && y + i < Board::HEIGHT) {
+                if (board.getBoardState(x - i, y + i) == player)
+                    score++;
+                else if (board.getBoardState(x - i, y + i) == otherPlayer)
+                    break;
+            }
+
+        };
+
+        for (int i = 1; i < 4; i++) {
+
+            if (x + i < Board::WIDTH && y - i >= 0) {
+                if (board.getBoardState(x + i, y - i) == player)
+                    score++;
+                else if (board.getBoardState(x + i, y - i) == otherPlayer)
+                    break;
+            }
+
+        };
+
+        for (int i = 1; i < 4; i++) {
+
+            if (x - i >= 0 && y - i >= 0) {
+                if (board.getBoardState(x - i, y - i) == player)
+                    score++;
+                else if (board.getBoardState(x - i, y - i) == otherPlayer)
+                    break;
+            }
+
+        };
+        for (int i = 1; i < 4; i++) {
+
+            if (x + i < Board::WIDTH && y + i < Board::HEIGHT) {
+                if (board.getBoardState(x + i, y + i) == player)
+                    score++;
+                else if (board.getBoardState(x + i, y + i) == otherPlayer)
+                    break;
+            }
+
+        };
+
+        return score;
 }
