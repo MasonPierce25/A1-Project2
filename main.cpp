@@ -18,6 +18,7 @@
         int evalFunction0(Board);
         int evalFunction1(Board);
         int evalFunction2(Board);
+        void runGame(int,int,int,int);
         
 
 int main(int argc, char** argv) {
@@ -30,15 +31,15 @@ int main(int argc, char** argv) {
     int userInput=0;
     
     while(!calculateWin(mainBoard) && !mainBoard.isFull()){
-        if(!isMax){
-            cin>>userInput;
-            mainBoard.placePiece(userInput-1,1);
-            isMax=!isMax;
-            continue;
-        }
+//        if(!isMax){
+//            cin>>userInput;
+//            mainBoard.placePiece(userInput-1,1);
+//            isMax=!isMax;
+//            continue;
+//        }
         mainBoard.path=0;
         mainBoard.pathLength=0;
-        tempBoard=minMaxAB(mainBoard,4,isMax,INT_MIN,INT_MAX,evalFunctions[1]);
+        tempBoard=minMaxAB(mainBoard,4,isMax,INT_MIN,INT_MAX,evalFunctions[0]);
         mainBoard.placePiece(tempBoard.getFirstPath(),isMax?2:1);
         mainBoard.printBoardState();
         cout << "Board Value: "<<(evalFunctions[0])(mainBoard)<<endl;
@@ -51,6 +52,10 @@ int main(int argc, char** argv) {
     cout<<"The game has finished. Enter any value to continue."<<endl;
     cin>>input;
     return 0;
+}
+
+void runGame(){
+    
 }
 
 Board minMaxAB(Board currentBoard, int depth, bool isMax,int alpha, int beta, int (*EvaluationFunction)(Board)){
@@ -80,7 +85,7 @@ Board minMaxAB(Board currentBoard, int depth, bool isMax,int alpha, int beta, in
                 bestSuccessorBoard=tempBoard;
                 init = false;
             }
-            cout<<i<<" : "<<tempBoard.evaluatedState<<endl;
+//            cout<<i<<" : "<<tempBoard.evaluatedState<<endl;
             //choose the best successor or break using Alpha Beta Pruning
             if(isMax){
                 //update alpha if the current board is greater
@@ -210,7 +215,6 @@ int evalFunction0(Board board){
     
     int bestMin=0;
     int bestMax=0;
-    int centerBonus=0;
     int min=0;
     int max=0;
     
@@ -222,12 +226,10 @@ int evalFunction0(Board board){
         if(board.getBoardState(x,0)==0)
             continue;
         lastPlayer = board.getBoardState(x,0);
+        min=max=0;
         for(int y=1;y<Board::HEIGHT;y++){
             if(board.getBoardState(x,y)==0)
                 continue;
-            else if(x==4){
-                centerBonus+=100*(board.getBoardState(x,y)==1?-1:1);
-            }
             if(board.getBoardState(x,y)==lastPlayer){
                 if(lastPlayer == 1){
                    min++;
@@ -260,6 +262,7 @@ int evalFunction0(Board board){
     min=max=0;
     for(int y=0;y<Board::HEIGHT;y++){
         lastPlayer = board.getBoardState(0,y);
+        min=max=0;
         for(int x=1;x<Board::WIDTH;x++){
             if(board.getBoardState(x,y)==0)
                 continue;
@@ -297,6 +300,7 @@ int evalFunction0(Board board){
         int x = z>=Board::HEIGHT?(z-Board::HEIGHT+1):0;
         lastPlayer = board.getBoardState(x,z-x);
         x++;
+        min=max=0;
         for(;x<Board::WIDTH && x<=z;x++) {
            int y = z - x;
            if(board.getBoardState(x,y)==0)
@@ -329,13 +333,11 @@ int evalFunction0(Board board){
         int x = z>=Board::HEIGHT?(z-Board::HEIGHT+1):0;
         lastPlayer = board.getBoardState(x,z-x);
         x++;
+        min=max=0;
         for(;x<Board::WIDTH && x<=z;x++) {
            int y = z - x;
             if(board.getBoardState(Board::WIDTH-1-x,y)==0)
                 continue;
-            else if(x==4){
-                centerBonus+=board.getBoardState(x,y)==1?-1:1;
-            }
             if(board.getBoardState(Board::WIDTH-1-x,y)==lastPlayer){
                 if(lastPlayer == 1){
                    min++;
