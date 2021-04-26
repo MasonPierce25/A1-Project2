@@ -1,8 +1,4 @@
-/* 
- * File:   Game.h
- * Author: Avery Wylin
- *
- */
+
 
 #ifndef BOARD_H
 #define BOARD_H
